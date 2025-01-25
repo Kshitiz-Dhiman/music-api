@@ -41,7 +41,7 @@ router.get("/:youtubeId", validateYouTubeId, async (req, res) => {
         res.json({ url: format.url });
     } catch (e) {
         console.error("Error fetching video info:", e);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).json({ error: e });
     }
 });
 
