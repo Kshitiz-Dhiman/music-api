@@ -18,28 +18,29 @@ router.get("/:youtubeId", validateYouTubeId, async (req, res) => {
     }
 
     try {
-        console.log("Fetching video info for ID:", req.params.youtubeId);
-        const videoInfo = await ytdl.getInfo(req.params.youtubeId);
-        const format = ytdl.chooseFormat(videoInfo.formats, { quality: 'highestaudio', filter: 'audioonly' });
+        // console.log("Fetching video info for ID:", req.params.youtubeId);
+        // const videoInfo = await ytdl.getInfo(req.params.youtubeId);
+        // const format = ytdl.chooseFormat(videoInfo.formats, { quality: 'highestaudio', filter: 'audioonly' });
 
-        console.log("Starting ffmpeg stream with format URL:", format.url);
-        const stream = ffmpeg(format.url)
-            .setFfmpegPath(ffmpegPath)
-            .audioCodec('libmp3lame')
-            .format('mp3')
-            .on('end', () => {
-                console.log('All done! Processing finished successfully');
-            })
-            .on('error', (err) => {
-                console.error('Whoops! Error in processing:', err);
-                if (!res.headersSent) {
-                    res.status(500).json({ error: 'Something went wrong with the stream' });
-                }
-            });
+        // console.log("Starting ffmpeg stream with format URL:", format.url);
+        // const stream = ffmpeg(format.url)
+        //     .setFfmpegPath(ffmpegPath)
+        //     .audioCodec('libmp3lame')
+        //     .format('mp3')
+        //     .on('end', () => {
+        //         console.log('All done! Processing finished successfully');
+        //     })
+        //     .on('error', (err) => {
+        //         console.error('Whoops! Error in processing:', err);
+        //         if (!res.headersSent) {
+        //             res.status(500).json({ error: 'Something went wrong with the stream' });
+        //         }
+        //     });
 
-        res.setHeader('Content-Type', 'audio/mpeg');
-        res.setHeader('Transfer-Encoding', 'chunked');
-        stream.pipe(res, { end: true });
+        // res.setHeader('Content-Type', 'audio/mpeg');
+        // res.setHeader('Transfer-Encoding', 'chunked');
+        // stream.pipe(res, { end: true });
+        res.json("This is the music stream page");
     } catch (e) {
         console.error("Error fetching video info:", e);
         res.status(500).json({ error: "Error fetching video info" });
