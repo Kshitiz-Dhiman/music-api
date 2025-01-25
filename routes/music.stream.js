@@ -6,7 +6,6 @@ import { param, validationResult } from 'express-validator';
 const router = express.Router();
 const ffmpegPath = 'C:/ffmpeg/bin/ffmpeg.exe';
 
-
 const validateYouTubeId = [
     param('youtubeId').isString().withMessage('Invalid YouTube ID'),
 ];
@@ -14,13 +13,16 @@ const validateYouTubeId = [
 router.get("/:youtubeId", validateYouTubeId, async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+        console.error("Validation errors:", errors.array());
         return res.status(400).json({ errors: errors.array() });
     }
 
     try {
+        console.log("Fetching video info for ID:", req.params.youtubeId);
         const videoInfo = await ytdl.getInfo(req.params.youtubeId);
         const format = ytdl.chooseFormat(videoInfo.formats, { quality: 'highestaudio', filter: 'audioonly' });
 
+        console.log("Starting ffmpeg stream with format URL:", format.url);
         const stream = ffmpeg(format.url)
             .setFfmpegPath(ffmpegPath)
             .audioCodec('libmp3lame')
