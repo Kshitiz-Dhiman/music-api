@@ -2,6 +2,11 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 
+app.use(cors({ origin: "*" }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
 //Routes
 const musicStream = require("./routes/music.stream.js");
 const homePage = require("./routes/music.home.js");
