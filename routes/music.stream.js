@@ -4,6 +4,7 @@ const ffmpeg = require("fluent-ffmpeg");
 const { param, validationResult } = require("express-validator");
 const router = express.Router();
 const ffmpegPath = 'C:/ffmpeg/bin/ffmpeg.exe';
+
 const validateYouTubeId = [
     param('youtubeId').isString().withMessage('Invalid YouTube ID'),
 ];
@@ -11,37 +12,36 @@ const validateYouTubeId = [
 router.get("/:youtubeId", validateYouTubeId, async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        console.error("Validation errors:", errors.array());
         return res.status(400).json({ errors: errors.array() });
     }
 
+    res.setHeader('Content-Type', 'audio/mpeg');
+
     try {
-        console.log("Fetching video info for ID:", req.params.youtubeId);
-        const videoUrl = `https://www.youtube.com/watch?v=${req.params.youtubeId}`;
-        const audioStream = ytdl(videoUrl, { quality: 'lowestaudio', filter: 'audioonly' });
+        const info = await ytdl.getInfo(req.params.youtubeId);
+        const format = ytdl.chooseFormat(info.formats, { quality: 'highestaudio', filter: 'audioonly' });
 
-        console.log("Starting ffmpeg stream with video URL:", videoUrl);
-        const stream = ffmpeg(audioStream)
-            .setFfmpegPath(ffmpegPath)
-            .audioCodec('libmp3lame')
-            .audioBitrate(128) // Compress the audio to 128 kbps
-            .format('mp3')
-            .on('end', () => {
-                console.log('All done! Processing finished successfully');
-            })
-            .on('error', (err) => {
-                console.error('Whoops! Error in processing:', err);
-                if (!res.headersSent) {
-                    res.status(500).json({ error: 'Something went wrong with the stream' });
-                }
-            });
+        const proc = ffmpeg(format?.url)
+            .setFfmpegPath(ffmpegPath)  // For local dev, just set the path to ffmpeg.exe here like: setFfmpegPath('C:/ffmpeg/bin/ffmpeg.exe')
+            .toFormat('mp3');
 
-        res.setHeader('Content-Type', 'audio/mpeg');
-        res.setHeader('Transfer-Encoding', 'chunked');
-        stream.pipe(res, { end: true });
-    } catch (e) {
-        console.error("Error fetching video info:", e);
-        res.status(500).json({ error: "Error fetching video info" });
+        proc.on('end', () => {
+            console.log('All done! Processing finished successfully');
+        });
+
+        proc.on('error', (err) => {
+            console.error('Whoops! Error in processing:', err);
+            if (!res.headersSent) {
+                res.status(500).json({ error: 'Something went wrong with the stream' });
+            }
+        });
+
+        proc.pipe(res, { end: true });
+    } catch (error) {
+        console.error('Yikes! Error in fetching YouTube stream:', error);
+        if (!res.headersSent) {
+            res.status(500).json({ error: 'Oops! Error fetching YouTube stream' });
+        }
     }
 });
 

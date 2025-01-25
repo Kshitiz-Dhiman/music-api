@@ -1,5 +1,5 @@
 const express = require("express");
-const { YTMusic } = require("ytmusic-api");
+const YTMusic = require("ytmusic-api");
 const { query, validationResult } = require("express-validator");
 const router = express.Router();
 
