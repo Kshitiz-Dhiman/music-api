@@ -10,7 +10,7 @@ import homePage from "./routes/music.home.js";
 app.use("/stream", musicStream);
 app.use("/home", homePage);
 app.get("/", (req, res) => {
-    res.json("This is the home page of the music streaming service");
+    res.json("Music rahh");
 });
 app.listen(3000, () => {
     console.log("Server is running on port 3000");

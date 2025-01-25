@@ -19,8 +19,8 @@ router.get("/:youtubeId", validateYouTubeId, async (req, res) => {
 
     try {
         // console.log("Fetching video info for ID:", req.params.youtubeId);
-        // const videoInfo = await ytdl.getInfo(req.params.youtubeId);
-        // const format = ytdl.chooseFormat(videoInfo.formats, { quality: 'highestaudio', filter: 'audioonly' });
+        const videoInfo = await ytdl.getInfo(req.params.youtubeId);
+        const format = ytdl.chooseFormat(videoInfo.formats, { quality: 'highestaudio', filter: 'audioonly' });
 
         // console.log("Starting ffmpeg stream with format URL:", format.url);
         // const stream = ffmpeg(format.url)
