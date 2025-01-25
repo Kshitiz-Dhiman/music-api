@@ -1,24 +1,24 @@
 import express from 'express';
 import ytdl from 'ytdl-core';
 import ffmpeg from 'fluent-ffmpeg';
-import { param, validationResult } from 'express-validator';
+import { query, param, validationResult } from 'express-validator';
 
 const router = express.Router();
-const ffmpegPath = 'C:/ffmpeg/bin/ffmpeg.exe';
+// const ffmpegPath = 'C:/ffmpeg/bin/ffmpeg.exe';
 
-const validateYouTubeId = [
-    param('youtubeId').isString().withMessage('Invalid YouTube ID'),
-];
+// const validateYouTubeId = [
+//     query('youtubeId').isString().withMessage('Invalid YouTube ID'),
+// ];
 
-router.get("/:youtubeId", validateYouTubeId, async (req, res) => {
+router.get("/playMusic", async (req, res) => {
     try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
+        // const errors = validationResult(req);
+        // if (!errors.isEmpty()) {
+        // return res.status(400).json({ errors: errors.array() });
+        // }
 
         try {
-            const videoInfo = await ytdl.getInfo(req.params.youtubeId);
+            const videoInfo = await ytdl.getInfo(req.query.v);
             try {
                 const format = ytdl.chooseFormat(videoInfo.formats, { quality: 'highestaudio', filter: 'audioonly' });
 
