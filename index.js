@@ -1,12 +1,10 @@
-import express from "express";
-import cors from "cors";
-
+const express = require("express");
+const cors = require("cors");
 const app = express();
 
 //Routes
-import musicStream from "./routes/music.stream.js";
-import homePage from "./routes/music.home.js";
-
+const musicStream = require("./routes/music.stream.js");
+const homePage = require("./routes/music.home.js");
 app.use("/stream", musicStream);
 app.use("/home", homePage);
 app.get("/", (req, res) => {

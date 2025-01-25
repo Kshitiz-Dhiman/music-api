@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,6 +14,7 @@
     "express-validator": "^7.2.1",
     "ffmpeg-static": "^5.2.0",
     "fluent-ffmpeg": "^2.1.3",
+    "yt-dlp-wrap": "^2.3.12",
     "ytdl-core": "npm:@distube/ytdl-core@^4.15.9",
     "ytmusic-api": "^5.2.2"
   }

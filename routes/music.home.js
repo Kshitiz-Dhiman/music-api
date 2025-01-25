@@ -1,7 +1,6 @@
-import express from 'express';
-import YTMusic from 'ytmusic-api';
-import { body, query, validationResult } from 'express-validator';
-
+const express = require("express");
+const { YTMusic } = require("ytmusic-api");
+const { query, validationResult } = require("express-validator");
 const router = express.Router();
 
 // Middleware for input validation
@@ -26,4 +25,4 @@ router.get("/suggestions", validateQuery, async (req, res) => {
     }
 });
 
-export default router;
+module.exports = router;
