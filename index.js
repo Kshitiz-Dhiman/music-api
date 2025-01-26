@@ -5,7 +5,8 @@ const app = express();
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+const dotenv = require('dotenv');
+dotenv.config();
 
 //Routes
 const musicStream = require("./routes/music.stream.js");
