@@ -27,11 +27,11 @@ router.get("/:youtubeId", async (req, res) => {
         const stream = ffmpeg(ytdl(videoUrl, { format: format }))
             .setFfmpegPath(ffmpegPath)
             .audioCodec('libmp3lame')
-            .duration(60) // Trim to the first 30 seconds
+            .duration(30)
             .format('mp3')
             .noVideo()
             .on('start', (commandLine) => {
-                console.log('Spawned Ffmpeg with command: ' + commandLine);
+                console.log(`Spawned Ffmpeg with command: ${commandLine}`);
             })
             .on('end', () => {
                 console.log('All done! Processing finished successfully');
