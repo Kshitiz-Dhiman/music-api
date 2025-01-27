@@ -6,9 +6,10 @@ const YTMusic = require('ytmusic-api');
 router.get("/homepagetopalbums", async (req, res) => {
     try {
         const api = new YoutubeMusicApi();
-        await api.initalize();
-        const search = await api.search('music', 'album');
-        res.status(200).json(search);
+        api.initalize().then(async () => {
+            const search = await api.search('music', 'album');
+            res.status(200).json(search);
+        });
     } catch (e) {
         console.error("Error fetching home page top albums:", e);
         res.status(500).json({ error: "Internal Server Error" });
