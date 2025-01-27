@@ -10,7 +10,7 @@ dotenv.config();
 
 //Routes
 const musicStream = require("./routes/music.stream.js");
-const musicOptions = require("./routes/music.home.js");
+const musicOptions = require("./routes/music.song.js");
 const musicArtist = require("./routes/music.artist.js");
 const musicAlbum = require("./routes/music.album.js");
 app.use("/music", musicOptions);
@@ -18,7 +18,9 @@ app.use("/stream", musicStream);
 app.use("/artist", musicArtist);
 app.use("/album", musicAlbum);
 app.get("/", (req, res) => {
-    res.json("Hello world");
+    res.json({
+        message: "Welcome to the music app"
+    });
 });
 app.listen(3000, () => {
     console.log("Server is running on port 3000");
