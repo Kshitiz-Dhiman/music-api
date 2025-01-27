@@ -1,21 +1,19 @@
 const express = require("express");
 const ytdl = require("ytdl-core");
+const ffmpeg = require("fluent-ffmpeg");
 const router = express.Router();
+
+const ffmpegPath = "C:/ffmpeg/bin/ffmpeg.exe";
 
 router.get("/:youtubeId", async (req, res) => {
     try {
         const videoId = req.params.youtubeId;
+        const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
-        const info = await ytdl.getInfo(videoId, {
-            requestOptions: {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Cookie': 'YOUR_YOUTUBE_COOKIE_HERE', // Add your cookie
-                    'Referer': 'https://www.youtube.com/'
-                }
-            }
-        });
+        // Fetch video information
+        const info = await ytdl.getInfo(videoUrl);
 
+        // Filter audio-only formats
         const audioFormats = ytdl.filterFormats(info.formats, 'audioonly');
         const format = audioFormats[0];
 
@@ -25,19 +23,30 @@ router.get("/:youtubeId", async (req, res) => {
 
         res.setHeader('Content-Type', 'audio/mpeg');
 
-        const stream = ytdl(videoId, {
-            format: format,
-            requestOptions: {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Cookie': 'VISITOR_INFO1_LIVE=UaZN2cW2ilU; HSID=ACnq2eUTem6LoFsAW; SSID=A4RZHehduX_mj2Atz; APISID=l5DdmxVAKUrMLRnZ/A9xjmRCv-1U1dvsO8; SAPISID=C2AcXePwNtDzdMmv/A_RA7BygTRKlZm_Ni; __Secure-1PAPISID=C2AcXePwNtDzdMmv/A_RA7BygTRKlZm_Ni' // Repeat cookie
+        // Stream and trim the audio to the first 30 seconds
+        const stream = ffmpeg(ytdl(videoUrl, { format: format }))
+            .setFfmpegPath(ffmpegPath)
+            .audioCodec('libmp3lame')
+            .duration(60) // Trim to the first 30 seconds
+            .format('mp3')
+            .noVideo()
+            .on('start', (commandLine) => {
+                console.log('Spawned Ffmpeg with command: ' + commandLine);
+            })
+            .on('end', () => {
+                console.log('All done! Processing finished successfully');
+            })
+            .on('error', (error) => {
+                console.error('FFmpeg error:', error);
+                if (!res.headersSent) {
+                    res.status(500).json({ error: 'Something went wrong with the stream' });
                 }
-            }
-        });
+            });
 
-        stream.pipe(res);
+        res.setHeader('Transfer-Encoding', 'chunked');
+        stream.pipe(res, { end: true });
     } catch (error) {
-        console.error('YouTube stream error:', error);
+        console.error('Stream fetch failed:', error);
         res.status(500).json({
             error: 'Stream fetch failed',
             details: error.message

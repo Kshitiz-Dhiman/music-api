@@ -10,9 +10,13 @@ dotenv.config();
 
 //Routes
 const musicStream = require("./routes/music.stream.js");
-const homePage = require("./routes/music.home.js");
+const musicOptions = require("./routes/music.home.js");
+const musicArtist = require("./routes/music.artist.js");
+const musicAlbum = require("./routes/music.album.js");
+app.use("/music", musicOptions);
 app.use("/stream", musicStream);
-app.use("/home", homePage);
+app.use("/artist", musicArtist);
+app.use("/album", musicAlbum);
 app.get("/", (req, res) => {
     res.json("Hello world");
 });
