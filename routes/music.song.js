@@ -46,7 +46,7 @@ router.get("/getsong", [
 
     try {
         const api = new YoutubeMusicApi();
-        await api.initialize();
+        await api.initalize();
         const search = await api.search(req.query.q, "SONG");
         res.status(200).json(search);
     } catch (e) {
