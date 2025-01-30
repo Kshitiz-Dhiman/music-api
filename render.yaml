@@ -10,3 +10,5 @@ services:
     envVars:
       - key: FF_PATH
         value: /usr/bin/ffmpeg
+      - key: YT_DLP_PATH
+        value: /usr/local/bin/yt-dlp
