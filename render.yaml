@@ -6,7 +6,6 @@ services:
     plan: free
     buildCommand: npm install
     startCommand: npm start
-    dockerfilePath: Dockerfile
     envVars:
       - key: FF_PATH
         value: /usr/bin/ffmpeg
