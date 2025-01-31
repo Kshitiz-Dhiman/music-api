@@ -6,20 +6,15 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     curl
 
-# Download and setup yt-dlp with proper permissions
-RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
-    chmod +x /usr/local/bin/yt-dlp && \
-    ln -s /usr/local/bin/yt-dlp /usr/bin/yt-dlp
-
-# Verify installation
-RUN yt-dlp --version
+# Install yt-dlp
+RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
+RUN chmod a+rx /usr/local/bin/yt-dlp
+RUN ln -s /usr/local/bin/yt-dlp /usr/bin/yt-dlp
 
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
 COPY . .
+RUN npm install
 
-ENV FF_PATH=/usr/bin/ffmpeg
 ENV YT_DLP_PATH=/usr/bin/yt-dlp
 
 EXPOSE 3000

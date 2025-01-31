@@ -10,4 +10,4 @@ services:
       - key: FF_PATH
         value: /usr/bin/ffmpeg
       - key: YT_DLP_PATH
-        value: /usr/local/bin/yt-dlp
+        value: /usr/bin/yt-dlp

@@ -17,11 +17,28 @@ app.use("/music", musicOptions);
 app.use("/stream", musicStream);
 app.use("/artist", musicArtist);
 app.use("/album", musicAlbum);
+// Add this to your main app.js or server.js
+const { execSync } = require('child_process');
+
+function checkYtDlp() {
+    try {
+        const version = execSync('yt-dlp --version').toString().trim();
+        console.log('✅ yt-dlp is installed, version:', version);
+        return true;
+    } catch (error) {
+        console.error('❌ yt-dlp is not installed or not accessible:', error.message);
+        return false;
+    }
+}
+
+// Call this when your server starts
+checkYtDlp();
 app.get("/", (req, res) => {
     res.json({
         message: "Welcome to the music app"
     });
 });
 app.listen(3000, () => {
+    checkYtDlp();
     console.log("Server is running on port 3000");
 });

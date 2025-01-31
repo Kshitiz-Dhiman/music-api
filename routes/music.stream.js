@@ -10,10 +10,9 @@ router.get('/:videoId', async (req, res) => {
 
     // Determine platform-specific yt-dlp path
     const isWindows = os.platform() === 'win32';
-    const ytDlpPath = isWindows
+    const ytDlpPath = process.env.YT_DLP_PATH || (isWindows
         ? path.join(process.cwd(), 'bin', 'yt-dlp.exe')
-        : '/usr/local/bin/yt-dlp';
-
+        : '/usr/local/bin/yt-dlp');
     try {
         const ytDlpProcess = spawn(ytDlpPath, [
             '-f', 'bestaudio',
