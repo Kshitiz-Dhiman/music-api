@@ -3,17 +3,11 @@ const router = express.Router();
 const { spawn } = require('child_process');
 const { pipeline } = require('stream/promises');
 const path = require('path');
-const os = require('os');
 
 router.get('/:videoId', async (req, res) => {
     const { videoId } = req.params;
-
-    // Determine platform-specific yt-dlp path
-    const isWindows = os.platform() === 'win32';
-    // const ytDlpPath = process.env.YT_DLP_PATH || (isWindows
-    //     ? path.join(process.cwd(), 'bin', 'yt-dlp.exe')
-    //     : '/usr/local/bin/yt-dlp');
     const ytDlpPath = path.join(process.cwd(), 'bin', 'yt-dlp');
+
     try {
         const ytDlpProcess = spawn(ytDlpPath, [
             '-f', 'bestaudio',

@@ -2,12 +2,13 @@ version: 1
 services:
   - type: web
     name: music-server
-    env: node
+    env: docker
+    dockerfilePath: ./Dockerfile
     plan: free
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: docker build -t music-server .
+    startCommand: docker run -p $PORT:3000 music-server
     envVars:
       - key: FF_PATH
-        value: /usr/bin/ffmpeg
+        value: /app/bin/ffmpeg
       - key: YT_DLP_PATH
-        value: /usr/bin/yt-dlp
+        value: /app/bin/yt-dlp
