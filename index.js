@@ -14,7 +14,7 @@ const musicOptions = require("./routes/music.song.js");
 const musicArtist = require("./routes/music.artist.js");
 const musicAlbum = require("./routes/music.album.js");
 const songDetails = require("./routes/music.song.details.js");
-app.use("/music", musicOptions);
+app.use("/search", musicOptions);
 
 app.use("/artist", musicArtist);
 app.use("/album", musicAlbum);
