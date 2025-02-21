@@ -7,8 +7,3 @@ services:
     plan: free
     buildCommand: docker build -t music-server .
     startCommand: docker run -p $PORT:3000 music-server
-    envVars:
-      - key: FF_PATH
-        value: /app/bin/ffmpeg
-      - key: YT_DLP_PATH
-        value: /app/bin/yt-dlp
