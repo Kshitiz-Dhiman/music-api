@@ -9,13 +9,13 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 //Routes
-const musicStream = require("./routes/music.stream.js");
+
 const musicOptions = require("./routes/music.song.js");
 const musicArtist = require("./routes/music.artist.js");
 const musicAlbum = require("./routes/music.album.js");
 const songDetails = require("./routes/music.song.details.js");
 app.use("/music", musicOptions);
-app.use("/stream", musicStream);
+
 app.use("/artist", musicArtist);
 app.use("/album", musicAlbum);
 app.use("/song", songDetails);
