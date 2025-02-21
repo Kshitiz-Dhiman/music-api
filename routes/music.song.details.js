@@ -106,29 +106,35 @@ router.get("/", async (req, res, next) => {
 });
 
 // Get song recommendations
-// router.get("/recommend", async (req, res) => {
-//     const { id, lang = "hindi,english" } = req.query;
+// Get song recommendations
+router.get("/recommend", async (req, res) => {
+    const { id, lang = "hindi,english" } = req.query;
 
-//     try {
-//         const result = await api("reco.getRecommendedSongs", {
-//             pid: id,  // Change pid to use the id from query params
-//             language: lang  // Use the lang parameter from query
-//         });
+    try {
+        // Changed from reco.getRecommendedSongs to reco.getreco
+        const result = await api("reco.getreco", {
+            pid: id,
+            language: lang
+        });
 
-//         res.json({
-//             status: "Success",
-//             message: "Recommendations fetched successfully",
-//             data: result
-//         });
+        // Add validation for the response
+        if (result.error) {
+            throw new Error(result.error.msg || "Failed to get recommendations");
+        }
 
-//     } catch (error) {
-//         res.status(400).json({
-//             status: "Failed",
-//             message: error instanceof Error ? error.message : "Unknown error"
-//         });
-//     }
-// });
+        res.json({
+            status: "Success",
+            message: "Recommendations fetched successfully",
+            data: result
+        });
 
+    } catch (error) {
+        res.status(400).json({
+            status: "Failed",
+            message: error instanceof Error ? error.message : "Unknown error"
+        });
+    }
+});
 const extractTokenFromLink = (link) => {
     const url = new URL(link);
     return url.pathname.split("/").pop() || "";
