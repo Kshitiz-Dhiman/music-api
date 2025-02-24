@@ -125,7 +125,15 @@ router.get("/recommend", async (req, res) => {
         res.json({
             status: "Success",
             message: "Recommendations fetched successfully",
-            data: result
+            data: result.map((song) => (
+                {
+                    id: song.id,
+                    title: song.title,
+                    image: song.image,
+                    artists: song.more_info.artistMap.primary_artists,
+                    download_url: createDownloadLinks(song.more_info.encrypted_media_url),
+                }
+            ))
         });
 
     } catch (error) {
