@@ -1,10 +1,9 @@
-const { Router, Request, Response, NextFunction } = require('express');
+const { Router } = require('express');
 const Crypto = require('crypto-js');
 
 const router = Router();
 const baseUrl = "https://www.jiosaavn.com/api.php";
 
-// Utility function to make API calls
 const api = async (path, params = {}) => {
     const searchParams = new URLSearchParams({
         _format: "json",
@@ -54,47 +53,34 @@ function createDownloadLinks(encryptedMediaUrl) {
 
     return decryptedLink;
 }
-// Middleware to validate request parameters
-// router.use("/", async (req, res, next) => {
-//     const { id, link } = req.query;
 
-//     if (!id && !link) {
-//         return res.status(400).json({
-//             status: "Failed",
-//             message: "Please provide song id(s) or link"
-//         });
-//     }
-
-//     next();
-// });
-
-// Get song details
 router.get("/", async (req, res, next) => {
-    const { id, link, mini = "false" } = req.query;
+    const { id, link } = req.query;
 
     try {
-        // Get the token either from link or use the ID directly
         const pids = link ? extractTokenFromLink(link) : id;
-
-        const result = await api("song.getDetails", {
-            pids  // Now pids is properly defined
-        });
+        const result = await api("song.getDetails", { pids });
 
         if (!result.songs) {
             throw new Error("Song not found");
         }
-        const encryptedMediaUrl = result.songs[0]?.more_info?.encrypted_media_url;
+
+        const song = result.songs[0];
+        const encryptedMediaUrl = song?.more_info?.encrypted_media_url;
 
         if (!encryptedMediaUrl) {
             throw new Error("No media URL found");
         }
 
-        const download = createDownloadLinks(encryptedMediaUrl);
         res.json({
-            status: "Success",
-            message: "Song details fetched successfully",
-            data: parseMini(mini) ? miniResponse(result) : result,
-            download: download
+            data: {
+                id: song.id,
+                title: song.title,
+                subtitle: song.subtitle,
+                image: song.image,
+                artists: song.more_info.artistMap.primary_artists,
+                download: createDownloadLinks(encryptedMediaUrl)
+            }
         });
 
     } catch (error) {
@@ -111,13 +97,11 @@ router.get("/recommend", async (req, res) => {
     const { id, lang = "hindi,english" } = req.query;
 
     try {
-        // Changed from reco.getRecommendedSongs to reco.getreco
         const result = await api("reco.getreco", {
             pid: id,
             language: lang
         });
 
-        // Add validation for the response
         if (result.error) {
             throw new Error(result.error.msg || "Failed to get recommendations");
         }
