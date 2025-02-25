@@ -14,12 +14,13 @@ const musicOptions = require("./routes/music.song.js");
 const musicArtist = require("./routes/music.artist.js");
 const musicAlbum = require("./routes/music.album.js");
 const songDetails = require("./routes/music.song.details.js");
+const getTrending = require("./routes/music.trending.js");
 app.use("/search", musicOptions);
 
 app.use("/artist", musicArtist);
 app.use("/album", musicAlbum);
 app.use("/song", songDetails);
-
+app.use("/get", getTrending);
 app.get("/", (req, res) => {
     res.json({
         message: "Welcome to the music app"
