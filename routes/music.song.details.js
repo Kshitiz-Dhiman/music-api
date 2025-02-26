@@ -72,14 +72,51 @@ router.get("/", async (req, res, next) => {
             throw new Error("No media URL found");
         }
 
+        // Format the response with valuable information
         res.json({
+            status: "Success",
+            message: "Song details fetched successfully",
             data: {
                 id: song.id,
                 title: song.title,
                 subtitle: song.subtitle,
-                image: song.image,
-                artists: song.more_info.artistMap.primary_artists,
-                download: createDownloadLinks(encryptedMediaUrl)
+                type: song.type,
+                year: song.year,
+                duration: song.more_info.duration,
+                language: song.language,
+                playCount: song.play_count,
+                images: {
+                    small: song.image.replace("150x150", "50x50"),
+                    medium: song.image.replace("150x150", "500x500"),
+                    large: song.image,
+                    artists: song.more_info.artistMap.primary_artists[0]?.image || null
+                },
+                album: {
+                    id: song.more_info.album_id,
+                    name: song.more_info.album,
+                    url: song.more_info.album_url
+                },
+                artists: {
+                    primary: song.more_info.artistMap.primary_artists.map(artist => ({
+                        id: artist.id,
+                        name: artist.name,
+                        role: artist.role,
+                        image: artist.image,
+                        url: artist.perma_url
+                    })),
+                    all: song.more_info.artistMap.artists.map(artist => ({
+                        id: artist.id,
+                        name: artist.name,
+                        role: artist.role,
+                        image: artist.image || null,
+                        url: artist.perma_url
+                    }))
+                },
+                download: createDownloadLinks(encryptedMediaUrl),
+                releaseDate: song.more_info.release_date,
+                label: song.more_info.label,
+                copyright: song.more_info.copyright_text,
+                url: song.perma_url
             }
         });
 
@@ -90,7 +127,15 @@ router.get("/", async (req, res, next) => {
         });
     }
 });
-
+/*
+      {
+              id: song.id,
+              title: song.title,
+              subtitle: song.subtitle,
+              image: song.image,
+              artists: song.more_info.artistMap.primary_artists,
+              download: createDownloadLinks(encryptedMediaUrl)
+          }*/
 // Get song recommendations
 // Get song recommendations
 router.get("/recommend", async (req, res) => {
