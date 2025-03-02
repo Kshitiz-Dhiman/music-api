@@ -131,7 +131,16 @@ router.get("/", async (req, res) => {
                 follower_count: result.follower_count,
                 dedicated_artist_playlist: result.dedicated_artist_playlist,
                 featured_artist_playlist: result.featured_artist_playlist,
-                singles: result.singles,
+                singles: result.singles.map(song => {
+                    return {
+                        id: song.id,
+                        title: song.title,
+                        subtitle: song.subtitle,
+                        image: formatQualityImage(song.image),
+                        play_count: song.play_count,
+                        more_info: song.more_info
+                    };
+                }),
                 latest_release: result.latest_release,
                 similarArtists: result.similarArtists
             }
