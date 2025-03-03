@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-
 const BASE_URL = "https://www.jiosaavn.com/api.php";
 const endpoints = {
     details: "artist.getArtistPageDetails",
@@ -8,18 +7,15 @@ const endpoints = {
     albums: "artist.getArtistMoreAlbum",
     top_songs: "search.artistOtherTopSongs"
 };
-
 const parseBool = (value) => {
     return ["true", "1"].includes(String(value).toLowerCase());
 };
-
 const validLangs = (lang) => {
     const supportedLangs = ["hindi", "english", "punjabi", "tamil", "telugu", "marathi", "gujarati", "bengali", "kannada", "bhojpuri", "malayalam", "urdu", "haryanvi", "rajasthani", "odia", "assamese"];
     return lang ? lang.split(",")
         .filter(l => supportedLangs.includes(l.toLowerCase()))
         .join(",") : "hindi,english";
 };
-
 const isJioSaavnLink = (link) => {
     try {
         const url = new URL(link);
@@ -28,7 +24,6 @@ const isJioSaavnLink = (link) => {
         return false;
     }
 };
-
 const tokenFromLink = (link) => {
     try {
         return new URL(link).pathname.split("/").pop() || "";
@@ -36,8 +31,6 @@ const tokenFromLink = (link) => {
         return "";
     }
 };
-
-// API call helper
 const api = async (path, params = {}) => {
     const searchParams = new URLSearchParams({
         _format: "json",
@@ -48,7 +41,7 @@ const api = async (path, params = {}) => {
     });
 
     const url = `${BASE_URL}?__call=${path}&${searchParams}`;
-    // console.log(url);
+    console.log(url);
     const response = await fetch(url, {
         headers: {
             cookie: `L=hindi,english; gdpr_acceptance=true; DL=english`
@@ -56,8 +49,6 @@ const api = async (path, params = {}) => {
     });
     return response.json();
 };
-
-// Format quality image
 const formatQualityImage = (imageUrl) => {
     return {
         small: imageUrl,
@@ -65,8 +56,6 @@ const formatQualityImage = (imageUrl) => {
         large: imageUrl.replace("150x150", "500x500")
     };
 };
-
-// Middleware to validate parameters
 router.use(["/*"], async (req, res, next) => {
     const { id, link, token } = req.query;
     const path = req.path;
@@ -91,8 +80,6 @@ router.use(["/*"], async (req, res, next) => {
         });
     }
 });
-
-// Get artist details
 router.get("/", async (req, res) => {
     try {
         const {
@@ -106,12 +93,14 @@ router.get("/", async (req, res) => {
             query: {
                 artistId: artistid,
                 token: token || tokenFromLink(link),
-                type: "artist",
-                n_song: "50",
-                n_album: "50"
+                type: "",
+                n_song: "10",
+                n_album: "10",
+                p: "",
             }
         });
-
+        //https://www.jiosaavn.com/api.php?__call=artist.getArtistPageDetails&_format=json&_marker=0&ctx=web6dot0&api_version=4& artistId=4671163& token=&type=&p=&n_song=10&n_album=10
+        //https://www.jiosaavn.com/api.php?__call=artist.getArtistPageDetails&_format=json&_marker=0&ctx=web6dot0&api_version=4& artistId=4671163& token=&type=&n_song=10&n_album=10
         if (!result.artistId) {
             throw new Error("Artist not found, please check the id, link or token");
         }
@@ -129,6 +118,26 @@ router.get("/", async (req, res) => {
                 title: result.name,
                 subtitle: result.subtitle,
                 follower_count: result.follower_count,
+                topSongs: result.topSongs.map(song => {
+                    return {
+                        id: song.id,
+                        title: song.title,
+                        subtitle: song.subtitle,
+                        image: formatQualityImage(song.image),
+                        play_count: song.play_count,
+                        more_info: song.more_info
+                    };
+                }),
+                topAlbums: result.topAlbums.map(album => {
+                    return {
+                        id: album.id,
+                        title: album.title,
+                        subtitle: album.subtitle,
+                        image: formatQualityImage(album.image),
+                        year: album.year,
+                        more_info: album.more_info
+                    };
+                }),
                 dedicated_artist_playlist: result.dedicated_artist_playlist,
                 featured_artist_playlist: result.featured_artist_playlist,
                 singles: result.singles.map(song => {
@@ -154,8 +163,6 @@ router.get("/", async (req, res) => {
         });
     }
 });
-
-
 router.get("/top-songs", async (req, res) => {
     try {
         const {
@@ -207,8 +214,6 @@ router.get("/top-songs", async (req, res) => {
         });
     }
 });
-
-// Get artist songs
 router.get("/more-songs", async (req, res) => {
     try {
         const {
@@ -265,7 +270,8 @@ router.get("/more-songs", async (req, res) => {
                 explicit: song.explicit_content === "1",
                 list_count: Number.parseInt(song.list_count || "0"),
                 list_type: song.list_type,
-                music: song.music
+                music: song.music,
+                more_info: song.more_info,
             };
         });
 
@@ -297,8 +303,6 @@ router.get("/more-songs", async (req, res) => {
         });
     }
 });
-
-// Get artist albums
 router.get("/more-albums", async (req, res) => {
     try {
         const {
@@ -338,7 +342,4 @@ router.get("/more-albums", async (req, res) => {
         });
     }
 });
-
-
-
 module.exports = router;
