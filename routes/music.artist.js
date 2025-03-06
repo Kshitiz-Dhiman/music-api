@@ -182,14 +182,13 @@ router.get("/top-songs", async (req, res) => {
                 token: token || tokenFromLink(link),
                 type: "artist",
                 n_song: limit,
-                language: validLangs(lang)
+                language: ""
             }
         });
 
         if (parseBool(raw)) {
             return res.json(result);
         }
-
         const response = {
             status: "Success",
             message: "✅ Artist top songs fetched successfully",
