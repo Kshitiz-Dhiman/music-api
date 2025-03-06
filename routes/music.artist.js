@@ -226,6 +226,8 @@ router.get("/more-songs", async (req, res) => {
             raw = "",
             mini = ""
         } = req.query;
+        //https://www.jiosaavn.com/api.php?__call=artist.getArtistMoreSong&_format=json&_marker=0&ctx=web6dot0&api_version=4&artistId=4671163&page=0&category=&sort=&language=hindi%2Cenglish
+
 
         const result = await api(endpoints.songs, {
             query: {
@@ -233,7 +235,7 @@ router.get("/more-songs", async (req, res) => {
                 page,
                 category,
                 sort,
-                language: validLangs(lang)
+                language: ""
             }
         });
 
