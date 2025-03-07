@@ -41,7 +41,7 @@ const api = async (path, params = {}) => {
     });
 
     const url = `${BASE_URL}?__call=${path}&${searchParams}`;
-    console.log(url);
+    // console.log(url);
     const response = await fetch(url, {
         headers: {
             cookie: `L=hindi,english; gdpr_acceptance=true; DL=english`
@@ -226,7 +226,7 @@ router.get("/more-songs", async (req, res) => {
             raw = "",
             mini = ""
         } = req.query;
-       
+
 
         const result = await api(endpoints.songs, {
             query: {
