@@ -1,75 +1,14 @@
 const express = require('express');
 const router = express.Router();
-
-// Base URL for JioSaavn API
-const baseUrl = "https://www.jiosaavn.com/api.php";
-
-// Endpoints configuration
-const endpoints = {
-    trending: 'content.getTrending',
-    featured_playlists: 'webapi.getFeaturedPlaylists',
-    charts: 'webapi.getCharts',
-    top_shows: 'webapi.getTopShows',
-    top_artists: 'webapi.getTopArtists',
-    top_albums: 'webapi.getTopAlbums',
-    mix_details: 'webapi.getMixDetails',
-    label_details: 'webapi.getLabelDetails',
-    featured_stations: 'webradio.createFeaturedStations',
-    actor_top_songs: 'webapi.getActorTopSongs',
-    lyrics: 'lyrics.getLyrics',
-    footer_details: 'webapi.getFooterDetails',
-    mega_menu: 'webapi.getMegaMenu'
-};
-
-// Utility functions
-const parseBool = (value) => {
-    return ["true", "1"].includes(String(value).toLowerCase());
-};
-
-const validLangs = (lang) => {
-    const supportedLangs = ["hindi", "english", "punjabi", "tamil", "telugu", "marathi", "gujarati", "bengali", "kannada", "bhojpuri", "malayalam", "urdu", "haryanvi", "rajasthani", "odia", "assamese"];
-    return lang ? lang.split(",")
-        .filter(l => supportedLangs.includes(l.toLowerCase()))
-        .join(",") : "hindi,english";
-};
-
-const isJioSaavnLink = (link) => {
-    try {
-        const url = new URL(link);
-        return url.hostname.includes('jiosaavn.com');
-    } catch {
-        return false;
-    }
-};
-
-const tokenFromLink = (link) => {
-    try {
-        const url = new URL(link);
-        return url.pathname.split("/").pop() || "";
-    } catch {
-        return "";
-    }
-};
-
-// API call helper
-const api = async (path, params = {}) => {
-    const searchParams = new URLSearchParams({
-        _format: "json",
-        _marker: "0",
-        ctx: "web6dot0",
-        api_version: "4",
-        ...params.query
-    });
-
-    const url = `${baseUrl}?__call=${path}&${searchParams}`;
-    const response = await fetch(url, {
-        headers: {
-            cookie: `L=hindi,english; gdpr_acceptance=true; DL=english`
-        }
-    });
-
-    return response.json();
-};
+const {
+    apiWithRetry,
+    endpoints,
+    parseBool,
+    validLangs,
+    isJioSaavnLink,
+    tokenFromLink,
+    formatQualityImage
+} = require('../utils/apiUtils');
 
 // Trending route
 router.get("/trending", async (req, res) => {
@@ -85,59 +24,81 @@ router.get("/trending", async (req, res) => {
             throw new Error("Invalid entity type");
         }
 
-        let result = await api(endpoints.trending, {
-            query: {
-                entity_type,
-                entity_language: validLangs(lang).split(",")[0]
-            }
-        });
-
-        if (!result.length) {
-            result = await api(endpoints.trending, {
+        let result;
+        try {
+            result = await apiWithRetry(endpoints.trending, {
+                query: {
+                    entity_type,
+                    entity_language: validLangs(lang).split(",")[0]
+                }
+            });
+        } catch (apiError) {
+            console.error("Primary API call failed, trying fallback", apiError);
+            // Fallback to a different approach
+            result = await apiWithRetry(endpoints.trending, {
                 query: {
                     entity_language: validLangs(lang).split(",")[0]
                 }
             });
 
-            result = result.filter(t => t.type === entity_type);
-
-            if (!result.length) {
-                throw new Error("Failed to fetch trending items");
+            if (entity_type) {
+                result = result.filter(t => t.type === entity_type);
             }
+        }
+
+        if (!result || !result.length) {
+            throw new Error("Failed to fetch trending items");
         }
 
         if (parseBool(raw)) {
             return res.json(result);
         }
 
+        // Map the results safely
         const response = {
             status: "Success",
             message: "✅ Currently Trending fetched successfully",
-            data: result.map(item => ({
-                id: item.id,
-                title: item.title,
-                type: item.type,
-                subtitle: item.more_info.artistMap.primary_artists.map(artist => artist.name).join(", "),
-                image: parseBool(mini) ? item.image : {
-                    small: item.image,
-                    medium: item.image.replace("150x150", "250x250"),
-                    large: item.image.replace("150x150", "500x500")
-                },
-                url: item.perma_url,
-                language: item.language
-            }))
+            data: result.map(item => {
+                try {
+                    // Handle potential missing properties safely
+                    const artistList = item.more_info?.artistMap?.primary_artists || [];
+                    const subtitle = artistList.length > 0
+                        ? artistList.map(artist => artist.name || "").filter(Boolean).join(", ")
+                        : (item.subtitle || "");
+
+                    return {
+                        id: item.id,
+                        title: item.title || "",
+                        type: item.type || "",
+                        subtitle,
+                        image: parseBool(mini) ? item.image : formatQualityImage(item.image),
+                        url: item.perma_url || "",
+                        language: item.language || ""
+                    };
+                } catch (mappingError) {
+                    console.error("Error mapping item:", mappingError, item);
+                    // Return a minimal valid object if mapping fails
+                    return {
+                        id: item.id || "unknown",
+                        title: item.title || "Unknown Title",
+                        type: item.type || "unknown",
+                        subtitle: "Error parsing item details",
+                        image: formatQualityImage(item.image)
+                    };
+                }
+            })
         };
 
         res.json(response);
     } catch (error) {
+        console.error("Trending API Error:", error);
         res.status(400).json({
             status: "Failed",
-            message: error.message
+            message: error.message || "Error fetching trending data"
         });
     }
 });
 
-// Other routes following similar pattern...
 // Mix details route
 router.get("/mix", async (req, res) => {
     try {
@@ -159,7 +120,7 @@ router.get("/mix", async (req, res) => {
             throw new Error("Please provide a valid link");
         }
 
-        const result = await api(endpoints.mix_details, {
+        const result = await apiWithRetry(endpoints.mix_details, {
             query: {
                 token: token || tokenFromLink(link),
                 type: "mix",
