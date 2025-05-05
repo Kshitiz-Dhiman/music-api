@@ -1,6 +1,5 @@
 const BASE_URL = "https://www.jiosaavn.com/api.php";
 
-// Utility functions
 const parseBool = (value) => {
     return ["true", "1"].includes(String(value).toLowerCase());
 };

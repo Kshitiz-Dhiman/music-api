@@ -11,7 +11,6 @@ const {
     formatQualityImage
 } = require('../utils/apiUtils');
 
-// Middleware for validating album requests
 router.use("/", async (req, res, next) => {
     try {
         const { id, link, token } = req.query;
