@@ -1,5 +1,10 @@
 const { Router } = require('express');
 const Crypto = require('crypto-js');
+const axios = require('axios');
+
+const YTMusic = require('ytmusic-api');
+const { check, validationResult } = require('express-validator');
+
 const {
     api,
     apiWithRetry,
@@ -200,4 +205,29 @@ router.get("/recommend", async (req, res) => {
     }
 });
 
+
+
+router.get("/lyrics", async (req, res) => {
+    try {
+        const { title, artist } = req.query;
+
+        if (!title || !artist) {
+            return res.status(400).json({ message: "Title and artist are required" });
+        }
+
+        const response = await axios.get(`https://api.lyrics.ovh/v1/${artist}/${title}`)
+        const data = response.data;
+
+        if (!data.lyrics) {
+            return res.status(404).json({ message: "Lyrics not found" });
+        }
+
+        return res.json({ lyrics: data.lyrics });
+        
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({ message: "Internal Server Error" })
+    }
+
+});
 module.exports = router;
