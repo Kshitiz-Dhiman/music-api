@@ -30,12 +30,10 @@ router.get('/song', verifyToken, async (req, res) => {
         }
 
         const user = await userModel.findOne({ _id: req.user._id });
-        console.log(user);
-        console.log(id);
+
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        console.log(user.likedSong);
         if (user.likedSong.includes(id)) {
             return res.status(200).json({ message: 'Song is liked', liked: true });
         } else {
@@ -80,6 +78,7 @@ router.post('/song', verifyToken, async (req, res) => {
 router.get('/songs', verifyToken, async (req, res) => {
     try {
         const user = await userModel.findOne({ _id: req.user._id });
+        
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
