@@ -14,13 +14,14 @@ const musicAlbum = require("./routes/music.album.js");
 const songDetails = require("./routes/music.song.details.js");
 const getTrending = require("./routes/music.trending.js");
 const authRouter = require("./routes/auth.route.js");
+const likedRouter = require("./routes/liked.route.js");
 app.use("/search", musicOptions);
 app.use("/artist", musicArtist);
 app.use("/album", musicAlbum);
 app.use("/song", songDetails);
 app.use("/get", getTrending);
 app.use("/auth", authRouter);
-
+app.use('/liked', likedRouter);
 
 app.get("/", (req, res) => {
     res.json({

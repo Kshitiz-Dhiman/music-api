@@ -19,7 +19,7 @@ const verifyToken = (req, res, next) => {
         next();
     } catch (error) {
         return res.status(401).json({ message: 'Invalid token' });
-    }   
+    }
 };
 
 // Google OAuth login route
@@ -53,6 +53,7 @@ router.get('/google', async (req, res) => {
 router.get('/user', verifyToken, async (req, res) => {
     try {
         const user = await userModel.findOne({ _id: req.user._id });
+        
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
