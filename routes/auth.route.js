@@ -62,7 +62,11 @@ router.get('/user', verifyToken, async (req, res) => {
                 _id: user._id,
                 email: user.email,
                 name: user.name,
-                image: user.image
+                image: user.image,
+                likedSong: user.likedSong,
+                likedArtist: user.likedArtist,
+                likedAlbum: user.likedAlbum,
+                history: user.history
             }
         });
     } catch (error) {
