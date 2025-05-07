@@ -10,9 +10,14 @@ const userSchema = new mongoose.Schema({
     image: {
         type: String,
     },
-    likedSong: {
-        type: Array,
-    },
+    likedSong: [
+        {
+            songId: String,
+            title: String,
+            artist: String,
+            image: String
+        }
+    ],
     likedAlbum: {
         type: Array,
     },
