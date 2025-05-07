@@ -9,6 +9,18 @@ const userSchema = new mongoose.Schema({
     },
     image: {
         type: String,
+    },
+    likedSong: {
+        type: Array,
+    },
+    likedAlbum: {
+        type: Array,
+    },
+    likedArtist: {
+        type: Array,
+    },
+    history: {
+        type: Array,
     }
 })
 
