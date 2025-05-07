@@ -10,7 +10,6 @@ const verifyToken = (req, res, next) => {
     }
 
     const token = authHeader.split(' ')[1];
-    console.log(token);
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
@@ -20,6 +19,33 @@ const verifyToken = (req, res, next) => {
     }
 };
 
+// Checking if song is liked or not
+
+router.get('/song', verifyToken, async (req, res) => {
+    try {
+        const { id } = req.query;
+        // console.log(id);
+        if (!id) {
+            return res.status(404).json({ message: 'Provide a id' });
+        }
+
+        const user = await userModel.findOne({ _id: req.user._id });
+        console.log(user);
+        console.log(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        console.log(user.likedSong);
+        if (user.likedSong.includes(id)) {
+            return res.status(200).json({ message: 'Song is liked', liked: true });
+        } else {
+            return res.status(200).json({ message: 'Song is not liked', liked: false });
+        }
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({ message: "Error" })
+    }
+})
 
 router.post('/song', verifyToken, async (req, res) => {
     try {

@@ -32,7 +32,6 @@ router.get('/google', async (req, res) => {
 
         const userRes = await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleRes.tokens.access_token}`);
 
-        console.log(userRes.data);
         const { email, name, picture } = userRes.data;
 
         let user = await userModel.findOne({ email });
@@ -53,7 +52,7 @@ router.get('/google', async (req, res) => {
 router.get('/user', verifyToken, async (req, res) => {
     try {
         const user = await userModel.findOne({ _id: req.user._id });
-        
+
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }

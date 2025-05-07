@@ -223,9 +223,9 @@ router.get("/lyrics", async (req, res) => {
         }
 
         return res.json({ lyrics: data.lyrics });
-        
+
     } catch (e) {
-        console.log(e);
+        // console.log(e);
         return res.status(500).json({ message: "Internal Server Error" })
     }
 
