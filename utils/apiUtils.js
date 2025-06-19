@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+
 const BASE_URL = "https://www.jiosaavn.com/api.php";
 
 const parseBool = (value) => {
@@ -52,7 +54,7 @@ const api = async (path, params = {}) => {
         });
 
         const url = `${BASE_URL}?__call=${path}&${searchParams}`;
-        console.log("Requesting URL:", url);
+        // console.log("Requesting URL:", url);
 
         const response = await fetch(url, {
             headers: {
@@ -169,7 +171,23 @@ const endpoints = {
     lyrics: 'lyrics.getLyrics'
 };
 
-// Export all the utilities
+const verifyToken = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    console.log(authHeader);
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'No token provided' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        req.user = decoded;
+        next();
+    } catch (error) {
+        return res.status(401).json({ message: 'Invalid token' });
+    }
+};
 module.exports = {
     BASE_URL,
     api,
@@ -179,5 +197,6 @@ module.exports = {
     validLangs,
     isJioSaavnLink,
     tokenFromLink,
-    formatQualityImage
+    formatQualityImage,
+    verifyToken
 };

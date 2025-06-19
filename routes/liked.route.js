@@ -19,7 +19,6 @@ const verifyToken = (req, res, next) => {
     }
 };
 
-// Checking if song is liked or not
 router.get('/song', verifyToken, async (req, res) => {
     try {
         const { id } = req.query;
@@ -33,7 +32,6 @@ router.get('/song', verifyToken, async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Check if the song exists in the likedSong array by songId
         const songExists = user.likedSong.some(song => song.songId === id);
 
         if (songExists) {
@@ -60,11 +58,9 @@ router.post('/song', verifyToken, async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Check if the song exists in the likedSong array by songId
         const songIndex = user.likedSong.findIndex(song => song.songId === songId);
 
         if (songIndex !== -1) {
-            // Song exists, remove it
             await userModel.findByIdAndUpdate(
                 req.user._id,
                 { $pull: { likedSong: { songId: songId } } },
@@ -72,7 +68,6 @@ router.post('/song', verifyToken, async (req, res) => {
             );
             return res.status(200).json({ message: 'Song removed from liked songs', liked: false });
         } else {
-            // Song doesn't exist, add it with additional info
             const songInfo = {
                 songId,
                 title: title || 'Unknown Title',

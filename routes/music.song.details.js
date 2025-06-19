@@ -2,8 +2,7 @@ const { Router } = require('express');
 const Crypto = require('crypto-js');
 const axios = require('axios');
 
-const YTMusic = require('ytmusic-api');
-const { check, validationResult } = require('express-validator');
+
 
 const {
     api,
@@ -11,8 +10,10 @@ const {
     parseBool,
     validLangs,
     tokenFromLink,
-    formatQualityImage
+    formatQualityImage,
+    verifyToken
 } = require('../utils/apiUtils');
+const userModel = require('../models/user.model');
 
 const router = Router();
 
@@ -57,7 +58,6 @@ function createDownloadLinks(encryptedMediaUrl) {
     }
 }
 
-// Main song details endpoint
 router.get("/", async (req, res) => {
     const { id, link, raw } = req.query;
 
@@ -144,7 +144,6 @@ router.get("/", async (req, res) => {
     }
 });
 
-// Get song recommendations
 router.get("/recommend", async (req, res) => {
     const { id, lang = "hindi,english", raw, mini } = req.query;
 
@@ -205,8 +204,6 @@ router.get("/recommend", async (req, res) => {
     }
 });
 
-
-
 router.get("/lyrics", async (req, res) => {
     try {
         const { title, artist } = req.query;
@@ -230,4 +227,62 @@ router.get("/lyrics", async (req, res) => {
     }
 
 });
+
+router.post('/addhistory', verifyToken, async (req, res) => {
+    try {
+        const { songId, title, artist, image } = req.body;
+        
+        if (!songId) {
+            return res.status(400).json({ message: "Song ID is required" });
+        }
+
+        const user = await userModel.findOne({ _id: req.user._id });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const songInfo = {
+            songId,
+            title: title || 'Unknown Title',
+            artist: artist || 'Unknown Artist',
+            image: image || '',
+        }
+
+        await userModel.findByIdAndUpdate(
+            req.user._id,
+            {
+                $pull: { history: { songId: songId } },
+                $push: {
+                    history: {
+                        $each: [songInfo],
+                        $position: 0,
+
+                    }
+                }
+            },
+            { new: true }
+        );
+
+        return res.status(200).json({ message: 'Song added to history' });
+    } catch (error) {
+        console.error('Error adding song to history:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.get('/history', verifyToken, async (req, res) => {
+    try {
+        const user = await userModel.findOne({ _id: req.user._id });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const history = user.history || [];
+
+        return res.status(200).json({ message: 'History fetched successfully', history: history });
+
+    } catch (error) {
+        console.error('Error fetching history:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+})
 module.exports = router;

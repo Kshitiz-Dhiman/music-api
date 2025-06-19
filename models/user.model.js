@@ -24,9 +24,14 @@ const userSchema = new mongoose.Schema({
     likedArtist: {
         type: Array,
     },
-    history: {
-        type: Array,
-    }
+    history: [
+        {
+            songId: String,
+            title: String,
+            artist: String,
+            image: String,
+        }
+    ],
 })
 
 const userModel = mongoose.model("user", userSchema);

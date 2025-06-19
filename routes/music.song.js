@@ -7,15 +7,13 @@ const {
     parseBool
 } = require('../utils/apiUtils');
 
-// Rate limiting middleware
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 100
 });
 
 router.use(limiter);
 
-// Search endpoint with enhanced validation and error handling
 router.get('/', async (req, res) => {
     try {
         const { q: query = '', raw = 'false' } = req.query;
