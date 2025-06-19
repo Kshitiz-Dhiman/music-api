@@ -231,14 +231,9 @@ router.get("/lyrics", async (req, res) => {
 router.post('/addhistory', verifyToken, async (req, res) => {
     try {
         const { songId, title, artist, image } = req.body;
-        
+
         if (!songId) {
             return res.status(400).json({ message: "Song ID is required" });
-        }
-
-        const user = await userModel.findOne({ _id: req.user._id });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
         }
 
         const songInfo = {
@@ -246,29 +241,50 @@ router.post('/addhistory', verifyToken, async (req, res) => {
             title: title || 'Unknown Title',
             artist: artist || 'Unknown Artist',
             image: image || '',
-        }
+            playedAt: new Date()
+        };
 
-        await userModel.findByIdAndUpdate(
+        const updatedUser = await userModel.findByIdAndUpdate(
             req.user._id,
-            {
-                $pull: { history: { songId: songId } },
-                $push: {
-                    history: {
-                        $each: [songInfo],
-                        $position: 0,
-
+            [
+                {
+                    $set: {
+                        history: {
+                            $slice: [
+                                {
+                                    $concatArrays: [
+                                        [songInfo],
+                                        {
+                                            $filter: {
+                                                input: "$history",
+                                                cond: { $ne: ["$$this.songId", songId] }
+                                            }
+                                        }
+                                    ]
+                                },
+                                50
+                            ]
+                        }
                     }
                 }
-            },
-            { new: true }
+            ],
+            { new: true, upsert: true }
         );
 
-        return res.status(200).json({ message: 'Song added to history' });
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json({
+            message: 'Song added to history',
+            historyCount: updatedUser.history.length
+        });
     } catch (error) {
         console.error('Error adding song to history:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 router.get('/history', verifyToken, async (req, res) => {
     try {
