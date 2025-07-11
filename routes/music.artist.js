@@ -8,7 +8,8 @@ const {
     validLangs,
     isJioSaavnLink,
     tokenFromLink,
-    formatQualityImage
+    formatQualityImage,
+    createDownloadLinks
 } = require('../utils/apiUtils');
 
 router.use(["/*"], async (req, res, next) => {
@@ -63,7 +64,6 @@ router.get("/", async (req, res) => {
         if (parseBool(raw)) {
             return res.json(result);
         }
-
         const response = {
             status: "Success",
             message: "✅ Artist details fetched successfully",
@@ -80,7 +80,10 @@ router.get("/", async (req, res) => {
                         subtitle: song.subtitle,
                         image: formatQualityImage(song.image),
                         play_count: song.play_count,
-                        more_info: song.more_info
+                        more_info: song.more_info,
+                        download_urls: createDownloadLinks(song.more_info.encrypted_media_url),
+                        artists: song.more_info?.artistMap?.primary_artists || [],
+
                     };
                 }),
                 topAlbums: result.topAlbums.map(album => {
@@ -102,7 +105,10 @@ router.get("/", async (req, res) => {
                         subtitle: song.subtitle,
                         image: formatQualityImage(song.image),
                         play_count: song.play_count,
-                        more_info: song.more_info
+                        more_info: song.more_info,
+                        download_urls: createDownloadLinks(song.more_info.encrypted_media_url),
+                        artists: song.more_info?.artistMap?.primary_artists || [],
+
                     };
                 }),
                 latest_release: result.latest_release,
@@ -155,7 +161,10 @@ router.get("/top-songs", async (req, res) => {
                     subtitle: song.subtitle,
                     image: formatQualityImage(song.image),
                     play_count: song.play_count,
-                    more_info: song.more_info
+                    more_info: song.more_info,
+                    artist: song.more_info?.artistMap?.artists || [],
+                    artists: song.more_info?.artistMap?.primary_artists || [],
+
                 }
             })
         };
@@ -245,7 +254,20 @@ router.get("/more-songs", async (req, res) => {
                 top_songs: {
                     total: result.topSongs.total,
                     last_page: result.topSongs.last_page,
-                    songs
+                    songs: songs.map(song => {
+                        const artistMap = song.more_info?.artistMap?.primary_artists || [];
+                        return {
+                            id: song.id,
+                            title: song.name,
+                            subtitle: song.subtitle,
+                            image: song.image,
+                            play_count: song.play_count,
+                            more_info: song.more_info,
+                            url: song.url,
+                            artists: artistMap,
+                            download_urls: createDownloadLinks(song.more_info.encrypted_media_url),
+                        };
+                    })
                 }
             }
         };

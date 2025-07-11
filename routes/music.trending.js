@@ -7,7 +7,8 @@ const {
     validLangs,
     isJioSaavnLink,
     tokenFromLink,
-    formatQualityImage
+    formatQualityImage,
+    createDownloadLinks
 } = require('../utils/apiUtils');
 
 // Trending route
@@ -73,7 +74,9 @@ router.get("/trending", async (req, res) => {
                         subtitle,
                         image: parseBool(mini) ? item.image : formatQualityImage(item.image),
                         url: item.perma_url || "",
-                        language: item.language || ""
+                        language: item.language || "",
+                        download_urls: createDownloadLinks(item.more_info.encrypted_media_url),
+                        artists: artistList
                     };
                 } catch (mappingError) {
                     console.error("Error mapping item:", mappingError, item);
@@ -83,7 +86,8 @@ router.get("/trending", async (req, res) => {
                         title: item.title || "Unknown Title",
                         type: item.type || "unknown",
                         subtitle: "Error parsing item details",
-                        image: formatQualityImage(item.image)
+                        image: formatQualityImage(item.image),
+                        download_urls: createDownloadLinks(item.more_info.encrypted_media_url),
                     };
                 }
             })

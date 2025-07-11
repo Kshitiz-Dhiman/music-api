@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 const BASE_URL = "https://www.jiosaavn.com/api.php";
-
+const Crypto = require('crypto-js');
 const parseBool = (value) => {
     return ["true", "1"].includes(String(value).toLowerCase());
 };
@@ -188,6 +188,46 @@ const verifyToken = (req, res, next) => {
         return res.status(401).json({ message: 'Invalid token' });
     }
 };
+function createDownloadLinks(encryptedMediaUrl) {
+    if (!encryptedMediaUrl) {
+        return [];
+    }
+
+    const qualities = [
+        { id: "_12", bitrate: "12kbps" },
+        { id: "_48", bitrate: "48kbps" },
+        { id: "_96", bitrate: "96kbps" },
+        { id: "_160", bitrate: "160kbps" },
+        { id: "_320", bitrate: "320kbps" },
+    ];
+
+    const key = "38346591";
+
+    try {
+        const decrypted = Crypto.DES.decrypt(
+            { ciphertext: Crypto.enc.Base64.parse(encryptedMediaUrl) },
+            Crypto.enc.Utf8.parse(key),
+            { mode: Crypto.mode.ECB }
+        );
+
+        const decryptedLink = decrypted.toString(Crypto.enc.Utf8);
+
+        for (const q of qualities) {
+            if (decryptedLink.includes(q.id)) {
+                return qualities.map(({ id, bitrate }) => ({
+                    quality: bitrate,
+                    link: decryptedLink.replace(q.id, id),
+                }));
+            }
+        }
+
+        // If no quality markers found, return as is
+        return [{ quality: "unknown", link: decryptedLink }];
+    } catch (error) {
+        console.error("Error decrypting media URL:", error);
+        return [];
+    }
+}
 module.exports = {
     BASE_URL,
     api,
@@ -198,5 +238,6 @@ module.exports = {
     isJioSaavnLink,
     tokenFromLink,
     formatQualityImage,
-    verifyToken
+    verifyToken,
+    createDownloadLinks
 };

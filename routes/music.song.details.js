@@ -185,7 +185,7 @@ router.get("/recommend", async (req, res) => {
                 subtitle: song.subtitle,
                 image: formatQualityImage(song.image),
                 artists: song.more_info?.artistMap?.primary_artists || [],
-                download: createDownloadLinks(song.more_info?.encrypted_media_url)
+                download_urls: createDownloadLinks(song.more_info?.encrypted_media_url)
             };
         });
 

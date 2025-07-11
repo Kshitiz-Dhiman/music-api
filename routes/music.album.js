@@ -8,7 +8,8 @@ const {
     validLangs,
     isJioSaavnLink,
     tokenFromLink,
-    formatQualityImage
+    formatQualityImage,
+    createDownloadLinks
 } = require('../utils/apiUtils');
 
 router.use("/", async (req, res, next) => {
@@ -85,12 +86,6 @@ router.get("/", async (req, res) => {
                     language: result.language || "",
                     year: result.year || "",
                     play_count: result.play_count || 0,
-                    explicit: result.explicit_content === 1,
-                    description: result.description || "",
-                    is_dolby_content: result.more_info?.is_dolby_content === true,
-                    is_dolby_sound: result.more_info?.is_dolby_sound === true,
-                    label: result.more_info?.label || "",
-                    header_desc: result.header_desc || "",
                     artists: result.more_info?.artistMap?.primary_artists?.map(artist => ({
                         id: artist.id,
                         name: artist.name,
@@ -99,7 +94,13 @@ router.get("/", async (req, res) => {
                         type: artist.type || "",
                         url: artist.perma_url || ""
                     })) || [],
-                    songs: [],
+                    songs: songs.map((song) => ({
+                        id: song.id,
+                        title: song.title,
+                        subtitle: song.subtitle,
+                        image: formatQualityImage(song.image),
+                        download_urls: createDownloadLinks(song.more_info.encrypted_media_url)
+                    })),
                     notice: "This album doesn't have any available songs"
                 }
             };
@@ -145,6 +146,7 @@ router.get("/", async (req, res) => {
                     duration: song.more_info?.duration || 0,
                     label: song.more_info?.label || "",
                     year: song.year || "",
+                    download_urls: createDownloadLinks(song.more_info?.encrypted_media_url),
                     artists: song.more_info?.artistMap?.primary_artists?.map(artist => ({
                         id: artist.id,
                         name: artist.name,
