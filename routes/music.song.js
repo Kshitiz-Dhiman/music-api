@@ -35,7 +35,6 @@ router.get('/', async (req, res) => {
         if (!result || typeof result !== 'object') {
             throw new Error('Invalid response format from JioSaavn');
         }
-
         const response = parseBool(raw) ? result : {
             status: 'Success',
             message: '✅ Search results fetched successfully',
