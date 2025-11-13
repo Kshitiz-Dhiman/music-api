@@ -48,8 +48,7 @@ router.get('/', async (req, res) => {
             }
         };
 
-        // Cache headers
-        res.set('Cache-Control', 'public, max-age=300'); // Cache for 5 minutes
+        res.set('Cache-Control', 'public, max-age=300');
         res.json(response);
     } catch (error) {
         console.error('Search endpoint error:', error);
